@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ядерная Ракета</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+        }
+        .container {
+            padding: 20px;
+        }
+        .checkbox-container {
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: grey;
+            color: white;
+            border: none;
+            cursor: not-allowed;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+        .btn:active {
+            background-color: #444;
+        }
+        .btn.active {
+            background-color: red;
+            cursor: pointer;
+        }
+        .btn.active:hover {
+            background-color: darkred;
+        }
+        .input-field {
+            margin: 10px 0;
+            padding: 10px;
+            width: 80%;
+            font-size: 16px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            color: white;
+            text-align: center;
+            padding-top: 50px;
+            animation: pulse 1s infinite;
+        }
+        .modal.active {
+            display: block;
+        }
+        @keyframes pulse {
+            0% { background: rgba(255, 0, 0, 0.9); }
+            50% { background: rgba(0, 0, 0, 0.9); }
+            100% { background: rgba(255, 0, 0, 0.9); }
+        }
+        .timer {
+            font-size: 30px;
+            margin-top: 20px;
+        }
+        .explosion-background {
+            width: 100vw;
+            height: 100vh;
+            background: url('vzriv.png') no-repeat center center/cover;
+        }
+    </style>
+</head>
+<body>
+
+<audio id="alarmSound" src="trevoga.mp3"></audio>
+<audio id="explosionSound" src="vzriv.mp3"></audio>
+
+<div class="container">
+    <h1>Добро пожаловать в симулятор отправки ядерной ракеты ☢️</h1>
+    <p>Внимание! Это исключительно развлекательное приложение, не имеющее никакого отношения к реальному миру.</p>
+    <p>Мы строго осуждаем любые реальные угрозы, данный симулятор создан только ради шутки.</p>
+    <p>Все совпадения с реальными событиями или личностями случайны, а любые действия в этом приложении — лишь часть игрового процесса.</p>
+
+    <div class="checkbox-container">
+        <label>
+            <input type="checkbox" id="agreeCheckbox"> Я осознаю, что это всего лишь шутка, и не буду воспринимать всерьёз.
+        </label>
+    </div>
+
+    <button id="nextBtn" class="btn" disabled>Далее</button>
+</div>
+
+<div class="modal" id="modal">
+    <h2>⚠️ ЯДЕРНАЯ РАКЕТА ОТПРАВЛЕНА</h2>
+    <p>Кому: <span id="recipient"></span></p>
+    <p>Причина: <span id="reason"></span></p>
+    <p>Осталось: <span class="timer" id="timer">15</span> секунд</p>
+
+    <div class="long-text">
+        <p>А́томное (или я́дерное) ору́жие — оружие массового поражения, действие которого основано на поражающих факторах ядерного или термоядерного взрыва.</p>
+        <p>Является одним из видов оружия массового поражения, основанным на разрушительной энергии, получаемой от ядерных реакций деления (оружие деления) или сочетания реакций деления и синтеза (термоядерное оружие). Оба типа бомб выделяют большое количество энергии из относительно небольшого количества вещества: одно ядерное устройство размером с обычную бомбу может разрушить целый город под действием мощной ударной волны, светового излучения и проникающей радиации.</p>
+    </div>
+</div>
+
+<div class="container" id="formContainer" style="display:none;">
+    <h2>Отправить Ядерную Ракету</h2>
+    <input type="text" id="recipientInput" class="input-field" placeholder="Кому отправить">
+    <input type="text" id="reasonInput" class="input-field" placeholder="Причина">
+    <button id="sendBtn" class="btn" disabled>Отправить</button>
+</div>
+
+<script>
+    document.getElementById('agreeCheckbox').addEventListener('change', function() {
+        document.getElementById('nextBtn').disabled = !this.checked;
+        document.getElementById('nextBtn').classList.toggle('active', this.checked);
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        document.querySelector('.container').style.display = 'none';
+        document.getElementById('formContainer').style.display = 'block';
+    });
+
+    document.getElementById('recipientInput').addEventListener('input', checkInputs);
+    document.getElementById('reasonInput').addEventListener('input', checkInputs);
+
+    function checkInputs() {
+        const recipient = document.getElementById('recipientInput').value;
+        const reason = document.getElementById('reasonInput').value;
+        const sendBtn = document.getElementById('sendBtn');
+        sendBtn.disabled = !(recipient && reason);
+        sendBtn.classList.toggle('active', recipient && reason);
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', function() {
+    const explosionSound = document.getElementById('explosionSound');
+    const modal = document.getElementById('modal');
+
+    // Подготавливаем звук взрыва, чтобы браузер разрешил его позже
+    explosionSound.play().then(() => {
+        explosionSound.pause();
+        explosionSound.currentTime = 0;
+    }).catch(error => console.error('Ошибка подготовки звука взрыва:', error));
+
+    // Показываем мигающее окно с таймером
+    modal.classList.add('active');
+
+    // Запускаем процесс отсчёта
+    startTimer();
+});
+
+function startTimer() {
+    let timeLeft = 14;
+    const timerElement = document.getElementById('timer');
+    const alarmSound = document.getElementById('alarmSound');
+    const explosionSound = document.getElementById('explosionSound');
+
+    // Запускаем тревогу
+    alarmSound.play();
+
+    const countdown = setInterval(function() {
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerElement.textContent = '0';
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+
+            // Запускаем звук взрыва и меняем фон
+            explosionSound.play().then(() => {
+                changeToExplosion();
+            }).catch(error => console.error('Ошибка воспроизведения взрыва:', error));
+
+        } else {
+            timerElement.textContent = timeLeft--;
+        }
+    }, 1000);
+}
+
+function changeToExplosion() {
+    // Убираем мигающее окно и меняем фон на взрыв
+    document.getElementById('modal').classList.remove('active');
+    document.body.innerHTML = `<div class="explosion-background"></div>`;
+}
+
+</script>
+
+</body>
+</html>
